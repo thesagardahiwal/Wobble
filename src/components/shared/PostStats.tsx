@@ -6,12 +6,12 @@ import { useEffect, useState } from "react";
 import Loader from "./Loader";
 
 type PostStatsProps = {
-    post: Models.Document;
+    post?: Models.Document;
     userId: string
 }
 
 function PostStats({post, userId}: PostStatsProps) {
-    const likesList = post.likes.map((user: Models.Document)=> user.$id)
+    const likesList = post?.likes.map((user: Models.Document)=> user.$id)
 
     
     const [like, setLike] = useState(likesList);
@@ -22,7 +22,7 @@ function PostStats({post, userId}: PostStatsProps) {
     const { mutate: deletePost, isPending: isDeletingSaved } = useDeleteSavedPostMutation();
     
     const {data: currentUser } = useGetCurrentUser();
-    const savedPostRecord = currentUser?.save.find((record: Models.Document)=> record.post.$id === post.$id);
+    const savedPostRecord = currentUser?.save.find((record: Models.Document)=> record.post.$id === post?.$id);
    
     useEffect(()=>{
         setIsSave(!!savedPostRecord);
@@ -40,7 +40,7 @@ function PostStats({post, userId}: PostStatsProps) {
         }
         
         setLike(newLikes);
-        likedPost({postId: post.$id, likesArray: newLikes});
+        likedPost({postId: post?.$id || '', likesArray: newLikes});
     }
     const handleSavedPost = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -52,7 +52,7 @@ function PostStats({post, userId}: PostStatsProps) {
             return;
         }
 
-        savedPost({postId: post.$id, userId});
+        savedPost({postId: post?.$id || '', userId});
         setIsSave(true);
     }
 

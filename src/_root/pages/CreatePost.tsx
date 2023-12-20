@@ -17,7 +17,7 @@ function CreatePost() {
             </h3>
         </div>
 
-        <PostForm />
+        <PostForm action = 'Create' />
       </div>
     </div>
   )

@@ -22,41 +22,61 @@ import { Models } from "appwrite"
 import { useUserContext } from "@/context/AuthContext"
 import { useToast } from "../ui/use-toast"
 import { useNavigate } from "react-router-dom"
-import { useCreatePostMutaion } from "@/lib/react-query/queriesAndMutations"
+import { useCreatePostMutaion, useUpdatePost } from "@/lib/react-query/queriesAndMutations"
+import Loader from "../shared/Loader"
 
 type PostFormProps = {
   post?: Models.Document;
+  action: 'Create' | 'Update';
+
 }
 
-function PostForm({ post }: PostFormProps) {
+function PostForm({ post, action }: PostFormProps) {
   const {mutateAsync: createPost, isPending: isCreating } = useCreatePostMutaion();
+  const {mutateAsync: updatePost, isPending: isUpdating } = useUpdatePost();
   const { user } = useUserContext();
   const { toast } = useToast();
   const navigate = useNavigate();
   const form = useForm<z.infer<typeof PostValidation>>({
     resolver: zodResolver(PostValidation),
     defaultValues: {
-      caption: post? post?.caption: "",
-      file:[],
-      location: post? post?.location:"",
-      tags: post? post.tags.joint(',') : ''
-
+      caption: post ? post?.caption : "",
+      file: [],
+      location: post ? post.location : "",
+      tags: post ? post.tags.join(",") : "",
     },
-  })
+  });
 
   async function onSubmit(values: z.infer<typeof PostValidation>) {
+    if (post && action === "Update") {
+      const updatedPost = await updatePost({
+        ...values,
+        postId: post.$id,
+        imageId: post.imageId,
+        imageUrl: post.imageUrl,
+      });
+
+      if (!updatedPost) {
+        toast({
+          title: `${action} post failed. Please try again.`,
+        });
+      }
+      return navigate(`/posts/${post.$id}`);
+    }
     const newPost = await createPost({
       ...values,
       userId: user.id,
     })
+
     if(!newPost) {
       return (
         toast({title: "Please try again!"})
-      )
+        )
+      }
+      
+      navigate('/')
     }
 
-    navigate('/')
-  }
 
   return (
     <Form {...form}>
@@ -83,7 +103,7 @@ function PostForm({ post }: PostFormProps) {
               <FormControl>
                 <FileUploader
                   fieldChange = {field.onChange}
-                  mediaUrl = {post?.mediaUrl}
+                  mediaUrl = {post?.imageUrl}
                 /> 
               </FormControl>
               <FormMessage className="shad-form_message" />
@@ -121,12 +141,19 @@ function PostForm({ post }: PostFormProps) {
         />
         <div className="flex gap-4 items-center justify-end">
 
-        <Button type="button"
-          className="shad-button_primary"
-        >Cancel</Button>
-        <Button type="submit"
-          className="shad-button_primary"
-        >Submit</Button>
+        <Button
+            type="button"
+            className="shad-button_dark_4"
+            onClick={() => navigate(-1)}>
+            Cancel
+          </Button>
+        <Button
+            type="submit"
+            className="shad-button_primary whitespace-nowrap"
+            disabled={isCreating || isUpdating}>
+            {(isCreating || isUpdating) && <Loader />}
+            {action} Post
+          </Button>
         </div>
       </form>
     </Form>

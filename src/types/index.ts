@@ -27,7 +27,7 @@ export type IUser = {
 
 export type IUpdatePost = {
     postId: string;
-    captioin: string;
+    caption: string;
     imageId: string;
     imageUrl: URL;
     file: File[];

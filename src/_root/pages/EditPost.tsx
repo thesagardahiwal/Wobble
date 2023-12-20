@@ -1,8 +1,18 @@
 import PostForm from "@/components/forms/PostForm"
+import Loader from "@/components/shared/Loader";
 import { useParams } from "react-router-dom";
+import { useGetPostById } from "@/lib/react-query/queriesAndMutations";
 
 function EditPost() {
+  const { id } = useParams();
+  const { data: post, isLoading } = useGetPostById(id || '');
 
+  if (isLoading)
+    return (
+      <div className="flex-center w-full h-full">
+        <Loader />
+      </div>
+    );
   return (
     <div className='flex flex-1'>
       <div className='common-container'>
@@ -16,7 +26,7 @@ function EditPost() {
             <h2 className="h3-bold md:h2-bold text-left w-full">Edit Post</h2>
         </div>
 
-        <PostForm /> 
+        <PostForm action="Update" post={post}/> 
       </div>
     </div>
   )
