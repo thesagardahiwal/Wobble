@@ -1,5 +1,5 @@
 import { ID, Query } from "appwrite";
-import { INewPost, INewUser, IUpdatePost } from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
 import { account, appwriteConfig, avatars, database, storage } from "./config";
 
 
@@ -207,6 +207,8 @@ export async function likedPost(postId:string, likesArray: string[]) {
         console.log(e)
     }
 }
+
+
 export async function savePost(postId:string, userId: string) {
     try {
         const savedPost = await database.createDocument(
@@ -413,5 +415,63 @@ export async function getUsers(limit?: number) {
         return users;
     } catch (error) {
         console.log(error);
+    }
+}
+
+export async function updateUser (user: IUpdateUser) {
+    try {
+        const hasFileToUpdate = user.file? user.file.length > 0 : false;
+        let image = {
+            imageUrl: user.imageUrl,
+            imageId: user.imageId,
+          };
+        
+        if (hasFileToUpdate) {
+        // Upload new file to appwrite storage
+        const uploadedFile = await uploadFile(user.file[0]);
+        if (!uploadedFile) throw Error;
+    
+        // Get new file url
+        const fileUrl = getFilePreview(uploadedFile.$id);
+        if (!fileUrl) {
+            await deleteFile(uploadedFile.$id);
+            throw Error;
+        }
+    
+        image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
+        }
+        const updatedUser = await database.updateDocument(
+            appwriteConfig.databaseId,
+            appwriteConfig.userCollectionId,
+            user.id,
+            {
+                name: user.name,
+                bio: user.bio,
+                imageUrl: image.imageUrl,
+                imageId: image.imageId,
+              }
+        );
+        // Failed to update
+        if (!updatedUser) {
+            // Delete new file that has been recently uploaded
+            if (hasFileToUpdate) {
+            await deleteFile(image.imageId);
+            }
+    
+            // If no new file uploaded, just throw error
+            throw Error;
+        }
+    
+        // Safely delete old file after successful update
+        if (hasFileToUpdate) {
+            await deleteFile(user.imageId);
+        }
+
+        return updatedUser;
+
+    } catch (e) {
+        console.log(e);
+        console.log("API.ts");
+        console.log()
     }
 }

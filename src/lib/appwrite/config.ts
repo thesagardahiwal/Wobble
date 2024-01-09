@@ -8,7 +8,8 @@ export const appwriteConfig = {
     storageId: import.meta.env.VITE_APPERITE_STORAGE_ID,
     userCollectionId: import.meta.env.VITE_APPERITE_USERS_COLLECTION_ID,
     postCollectinoId: import.meta.env.VITE_APPERITE_POSTS_COLLECTION_ID,
-    savedCollectionId: import.meta.env.VITE_APPERITE_SAVED_COLLECTION_ID
+    savedCollectionId: import.meta.env.VITE_APPERITE_SAVED_COLLECTION_ID,
+    followCollectionId: import.meta.env.VITE_APPERITE_FOLLOW_COLLECTION_ID
 }
 
 

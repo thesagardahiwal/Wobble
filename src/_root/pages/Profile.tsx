@@ -33,7 +33,6 @@ const Profile = () => {
   const { pathname } = useLocation();
 
   const { data: currentUser } = useGetUserById(id || "");
-
   if (!currentUser)
     return (
       <div className="flex-center w-full h-full">
@@ -64,7 +63,13 @@ const Profile = () => {
 
             <div className="flex gap-8 mt-10 items-center justify-center xl:justify-start flex-wrap z-20">
               <StatBlock value={currentUser.posts.length} label="Posts" />
-              <StatBlock value={20} label="Followers" />
+              <Link to={`/profile/${id}/followers`}
+                className={`profile-tab rounded-lg ${
+                  pathname === `/profile/${id}/followers` && "!bg-dark-3"
+                }`}
+                >
+                <StatBlock value={20} label="Followers" />
+                </Link>
               <StatBlock value={20} label="Following" />
             </div>
 
@@ -95,6 +100,7 @@ const Profile = () => {
               <Button type="button" className="shad-button_primary px-8">
                 Follow
               </Button>
+
             </div>
           </div>
         </div>
@@ -138,7 +144,7 @@ const Profile = () => {
         />
         {currentUser.$id === user.id && (
           <Route path="/liked-posts" element={<LikedPosts />} />
-        )}
+          )}
       </Routes>
       <Outlet />
     </div>
